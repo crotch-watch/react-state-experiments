@@ -1,11 +1,13 @@
 import { useRef } from "react"
-import { useForm } from "./Todo.hook"
+import { useForm, useToggleEdit } from "./Todo.hook"
 
 export const Todo = () => {
   const {
-    state: { todos, liveEditIds },
-    setters: { createTodo, editTodo, toggleEdit, deleteTodo, resetTodos },
+    todos,
+    setters: { createTodo, editTodo, deleteTodo, resetTodos },
   } = useForm()
+
+  const { liveEditing, toggleEdit, clearLiveEdits } = useToggleEdit()
 
   const createTodoRef = useRef<HTMLInputElement | null>(null)
 
@@ -41,9 +43,9 @@ export const Todo = () => {
       <br />
 
       <ul>
-        {todos.map((todo) => (
+        {todos.todos.map((todo) => (
           <div key={todo.uid}>
-            {liveEditIds.includes(todo.uid) ? (
+            {liveEditing.includes(todo.uid) ? (
               <form
                 onSubmit={(formEvent) => {
                   formEvent.preventDefault()
@@ -65,7 +67,14 @@ export const Todo = () => {
               </>
             )}
 
-            <button onClick={() => deleteTodo(todo.uid)}>delete</button>
+            <button
+              onClick={() => {
+                toggleEdit(todo.uid)
+                deleteTodo(todo.uid)
+              }}
+            >
+              delete
+            </button>
           </div>
         ))}
       </ul>
@@ -77,6 +86,7 @@ export const Todo = () => {
           if (createTodoRef.current !== null) {
             createTodoRef.current.value = ""
           }
+          clearLiveEdits()
           resetTodos()
         }}
       >
