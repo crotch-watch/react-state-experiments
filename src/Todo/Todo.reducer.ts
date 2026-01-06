@@ -6,23 +6,13 @@ export const formReducer = (
   action: FormActions
 ): FormState => {
   const { type } = action
-  const { todos, liveEditIds } = state
+  const { todos } = state
 
   switch (type) {
     case "createTodo":
       return { ...state, todos: [...todos, action.payload] }
 
-    case "toggleEdit":
-      return {
-        ...state,
-        liveEditIds: liveEditIds.includes(action.payload)
-          ? liveEditIds.filter((uid) => uid !== action.payload)
-          : [...liveEditIds, action.payload],
-      }
-
     case "editing":
-      if (!liveEditIds.includes(action.payload.uid)) return state
-
       const editingTodoIndex = todos.findIndex(
         (todo) => todo.uid === action.payload.uid
       )
@@ -40,10 +30,8 @@ export const formReducer = (
 
     case "deleteTodo":
       return {
+        ...state,
         todos: todos.filter((todo) => todo.uid !== action.payload),
-        liveEditIds: liveEditIds.includes(action.payload)
-          ? liveEditIds.filter((uid) => uid !== action.payload)
-          : liveEditIds,
       }
 
     case "resetTodos":
