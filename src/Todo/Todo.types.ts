@@ -5,12 +5,12 @@ export type Todo = {
 
 export type FormState = {
   todos: Array<Todo>
-  liveEditIds: Array<Todo["uid"]>
+  // liveEditIds: Array<Todo["uid"]>
 }
 
 const formTriggers = {
   createTodo: "createTodo",
-  toggleEdit: "toggleEdit",
+  // toggleEdit: "toggleEdit",
   editing: "editing",
   deleteTodo: "deleteTodo",
   resetTodo: "resetTodos",
@@ -23,10 +23,10 @@ export type FormActions =
       type: FormTriggers["createTodo"]
       payload: Todo
     }
-  | {
-      type: FormTriggers["toggleEdit"]
-      payload: Todo["uid"]
-    }
+  // | {
+  //     type: FormTriggers["toggleEdit"]
+  //     payload: Todo["uid"]
+  //   }
   | {
       type: FormTriggers["editing"]
       payload: { uid: Todo["uid"]; text: Todo["text"] }
