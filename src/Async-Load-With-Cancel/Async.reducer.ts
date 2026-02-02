@@ -2,7 +2,6 @@ import {
   asyncEvents,
   asyncStates,
   DEFAULT_ASYNC_MODE,
-  NO_ERROR,
   NO_POSTS,
 } from "./Async.consts"
 import type { AsyncActions, AsyncState } from "./Async.types"
@@ -32,7 +31,6 @@ export const asyncReducer = (
       return {
         ...state,
         mode: error,
-        posts: NO_POSTS,
         errorMessage: action.payload,
       }
     }
@@ -40,7 +38,7 @@ export const asyncReducer = (
     case acknowledged: {
       if (mode !== error) return state
 
-      return { ...state, errorMessage: NO_ERROR, mode: DEFAULT_ASYNC_MODE }
+      return { ...state, posts: NO_POSTS, mode: DEFAULT_ASYNC_MODE }
     }
 
     case processed: {
@@ -49,7 +47,6 @@ export const asyncReducer = (
       return {
         ...state,
         posts: action.payload,
-        errorMessage: NO_ERROR,
       }
     }
 

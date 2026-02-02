@@ -1,4 +1,4 @@
-import type { asyncEvents, AsyncMode } from "./Async.consts"
+import type { asyncEvents, asyncStates } from "./Async.consts"
 
 export type Param = string
 
@@ -13,12 +13,17 @@ export type Posts = Array<Post>
 
 export type Exception = string
 
-export type AsyncState = {
-  mode: AsyncMode
-  param: Param
-  posts: Posts
-  errorMessage: Exception
-}
+export type AsyncState =
+  | {
+      mode: typeof asyncStates.input
+      param: Param
+      posts: Posts
+    }
+  | {
+      mode: typeof asyncStates.error
+      param: Param
+      errorMessage: Exception
+    }
 
 export type AsyncActions =
   | {
