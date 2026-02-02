@@ -1,4 +1,4 @@
-import { asyncEvents, asyncStates } from "./Async.consts"
+import { asyncEvents, asyncStates, DEFAULT_ERROR } from "./Async.consts"
 import type { AsyncActions, AsyncState, Posts } from "./Async.types"
 
 const { input, error } = asyncStates
@@ -8,7 +8,7 @@ export const asyncReducer = (
   state: AsyncState,
   action: AsyncActions,
 ): AsyncState => {
-  const { mode, param, posts, errorMessage } = state
+  const { mode, param } = state
 
   switch (action.type) {
     case paramChanged: {
@@ -34,8 +34,9 @@ export const asyncReducer = (
     }
 
     case acknowledged: {
-      // rewrite
-      return state
+      if (mode !== error) return state
+
+      return { ...state, errorMessage: DEFAULT_ERROR, mode: input }
     }
 
     default:
