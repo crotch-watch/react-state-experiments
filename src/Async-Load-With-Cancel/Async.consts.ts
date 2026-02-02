@@ -19,16 +19,16 @@ Object.freeze(asyncEvents)
 
 export type AsyncEvent = keyof typeof asyncEvents
 
-export const DEFAULT_ASYNC_MODE: AsyncMode = asyncStates.input
-export const DEFAULT_PARAM: string = ""
-export const DEFAULT_POSTS: Posts = []
-export const DEFAULT_ERROR: string = ""
+export const DEFAULT_ASYNC_MODE = asyncStates.input
+export const NO_PARAM = ""
+export const NO_POSTS: Posts = []
+export const NO_ERROR = ""
 
 export const DEFAULT_ASYNC_STATE: AsyncState = {
   mode: DEFAULT_ASYNC_MODE,
-  param: DEFAULT_PARAM,
-  posts: DEFAULT_POSTS,
-  errorMessage: DEFAULT_ERROR,
+  param: NO_PARAM,
+  posts: NO_POSTS,
+  errorMessage: NO_ERROR,
 } as const
 
 Object.freeze(DEFAULT_ASYNC_STATE)

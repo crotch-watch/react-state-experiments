@@ -1,5 +1,11 @@
-import { asyncEvents, asyncStates, DEFAULT_ERROR } from "./Async.consts"
-import type { AsyncActions, AsyncState, Posts } from "./Async.types"
+import {
+  asyncEvents,
+  asyncStates,
+  DEFAULT_ASYNC_MODE,
+  NO_ERROR,
+  NO_POSTS,
+} from "./Async.consts"
+import type { AsyncActions, AsyncState } from "./Async.types"
 
 const { input, error } = asyncStates
 const { paramChanged, acknowledged, errored } = asyncEvents
@@ -23,12 +29,10 @@ export const asyncReducer = (
     case errored: {
       if (mode !== input) return state
 
-      const emptyPosts: Posts = []
-
       return {
         ...state,
         mode: error,
-        posts: emptyPosts,
+        posts: NO_POSTS,
         errorMessage: action.payload,
       }
     }
@@ -36,7 +40,7 @@ export const asyncReducer = (
     case acknowledged: {
       if (mode !== error) return state
 
-      return { ...state, errorMessage: DEFAULT_ERROR, mode: input }
+      return { ...state, errorMessage: NO_ERROR, mode: DEFAULT_ASYNC_MODE }
     }
 
     default:
