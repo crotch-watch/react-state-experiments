@@ -13,6 +13,9 @@ export const asyncEvents = {
   paramChanged: "paramChanged",
   errored: "errored",
   acknowledged: "acknowledged",
+  // just an action to set data not actual event
+  // not decomposing this for simplicity
+  processed: "processed",
 } as const
 
 Object.freeze(asyncEvents)

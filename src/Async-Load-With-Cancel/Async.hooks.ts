@@ -7,9 +7,10 @@ import {
   BASE_URL,
   DEFAULT_ASYNC_STATE,
 } from "./Async.consts"
+import type { Posts } from "./Async.types"
 
 const { input } = asyncStates
-const { paramChanged, errored, acknowledged } = asyncEvents
+const { paramChanged, errored, acknowledged, processed } = asyncEvents
 
 export const useAsync = () => {
   const [state, dispatch] = useReducer(asyncReducer, DEFAULT_ASYNC_STATE)
@@ -28,7 +29,10 @@ export const useAsync = () => {
 
       fetch(`${BASE_URL}?=${param}`, { signal: abortController.signal })
         .then((res) => res.json())
-        .then(console.log)
+        .then((res) => {
+          const posts = res as Posts
+          dispatch({ type: processed, payload: posts })
+        })
         .catch((e) => {
           const error = e as Error
           dispatch({ type: errored, payload: error.message })

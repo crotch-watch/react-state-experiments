@@ -8,7 +8,7 @@ import {
 import type { AsyncActions, AsyncState } from "./Async.types"
 
 const { input, error } = asyncStates
-const { paramChanged, acknowledged, errored } = asyncEvents
+const { paramChanged, acknowledged, errored, processed } = asyncEvents
 
 export const asyncReducer = (
   state: AsyncState,
@@ -41,6 +41,16 @@ export const asyncReducer = (
       if (mode !== error) return state
 
       return { ...state, errorMessage: NO_ERROR, mode: DEFAULT_ASYNC_MODE }
+    }
+
+    case processed: {
+      if (mode !== input) return state
+
+      return {
+        ...state,
+        posts: action.payload,
+        errorMessage: NO_ERROR,
+      }
     }
 
     default:

@@ -32,3 +32,7 @@ export type AsyncActions =
   | {
       type: typeof asyncEvents.acknowledged
     }
+  | {
+      type: typeof asyncEvents.processed
+      payload: Posts
+    }
