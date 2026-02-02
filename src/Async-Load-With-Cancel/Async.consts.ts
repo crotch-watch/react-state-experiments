@@ -1,4 +1,4 @@
-import type { AsyncState, Post } from "./Async.types"
+import type { AsyncState, Posts } from "./Async.types"
 
 export const asyncStates = {
   input: "input",
@@ -21,7 +21,7 @@ export type AsyncEvent = keyof typeof asyncEvents
 
 export const DEFAULT_ASYNC_MODE: AsyncMode = asyncStates.input
 export const DEFAULT_PARAM: string = ""
-export const DEFAULT_POSTS: Array<Post> = []
+export const DEFAULT_POSTS: Posts = []
 export const DEFAULT_ERROR: string = ""
 
 export const DEFAULT_ASYNC_STATE: AsyncState = {

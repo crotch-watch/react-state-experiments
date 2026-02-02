@@ -8,7 +8,7 @@ import {
   DEFAULT_ASYNC_STATE,
 } from "./Async.consts"
 
-const { input, error } = asyncStates
+const { input } = asyncStates
 const { paramChanged, errored, acknowledged } = asyncEvents
 
 export const useAsync = () => {
@@ -29,14 +29,17 @@ export const useAsync = () => {
       fetch(`${BASE_URL}?=${param}`, { signal: abortController.signal })
         .then((res) => res.json())
         .then(console.log)
-        .catch(() => dispatch({ type: errored }))
+        .catch((e) => {
+          const error = e as Error
+          dispatch({ type: errored, payload: error.message })
+        })
 
       return () => abortController.abort(ABORT_MESSAGE)
     }
   }, [mode, param])
 
   return {
-    state: { state },
+    state,
     action: { acknowledgeError, changeParam },
   }
 }

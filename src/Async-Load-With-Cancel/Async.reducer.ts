@@ -1,5 +1,5 @@
 import { asyncEvents, asyncStates } from "./Async.consts"
-import type { AsyncActions, AsyncState } from "./Async.types"
+import type { AsyncActions, AsyncState, Posts } from "./Async.types"
 
 const { input, error } = asyncStates
 const { paramChanged, acknowledged, errored } = asyncEvents
@@ -21,8 +21,16 @@ export const asyncReducer = (
     }
 
     case errored: {
-      // rewrite
-      return state
+      if (mode !== input) return state
+
+      const emptyPosts: Posts = []
+
+      return {
+        ...state,
+        mode: error,
+        posts: emptyPosts,
+        errorMessage: action.payload,
+      }
     }
 
     case acknowledged: {

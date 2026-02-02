@@ -9,12 +9,14 @@ export type Post = {
   body: string
 }
 
+export type Posts = Array<Post>
+
 export type Exception = string
 
 export type AsyncState = {
   mode: AsyncMode
   param: Param
-  posts: Array<Post>
+  posts: Posts
   errorMessage: Exception
 }
 
@@ -25,6 +27,7 @@ export type AsyncActions =
     }
   | {
       type: typeof asyncEvents.errored
+      payload: Exception
     }
   | {
       type: typeof asyncEvents.acknowledged
