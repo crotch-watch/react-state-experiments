@@ -1,5 +1,5 @@
-import { Events, MACHINE_STATES } from "./MultiForm.constants"
-import type { MachineAction, State } from "./MultiForm.types"
+import { Events, ENROLLER_STATES, FORM_SUB_STATES } from "./MultiForm.constants"
+import type { MachineAction, MachineState } from "./MultiForm.types"
 
 const {
   OPEN_FORM,
@@ -8,36 +8,42 @@ const {
   SUBMIT,
   SAVE_AND_EXIT,
 } = Events
-const { dashboard, form } = MACHINE_STATES
 
-export const multiReducer = (state: State, actions: MachineAction): State => {
+const { dashboard, form } = ENROLLER_STATES
+
+const { details, paymentInfo, review, final } = FORM_SUB_STATES
+
+export const multiReducer = (
+  state: MachineState,
+  actions: MachineAction,
+): MachineState => {
   const event = actions.type
   const { mode } = state
 
   switch (event) {
-    case OPEN_FORM: {
-      if (mode !== dashboard) return state
+    case SAVE_AND_EXIT: {
+      if (mode !== form) return state
       else return { mode: dashboard }
     }
 
-    case SAVE_AND_EXIT: {
-      if (mode === dashboard) return state
-      else return { mode: dashboard }
+    case OPEN_FORM: {
+      if (mode === form) return state
+      else return { mode: form, substate: details }
     }
 
     case DETAILS_CHECKED: {
-      if (mode !== form.details) return state
-      else return { mode: form.paymentInfo }
+      if (mode !== form) return state
+      else return { ...state, substate: paymentInfo }
     }
 
     case PAYMENT_INFO_PROVIDED: {
-      if (mode !== form.paymentInfo) return state
-      else return { mode: form.review }
+      if (mode !== form) return state
+      else return { ...state, substate: review }
     }
 
     case SUBMIT: {
-      if (mode !== form.review) return state
-      else return { mode: form.final }
+      if (mode !== form) return state
+      else return { ...state, substate: final }
     }
 
     default:

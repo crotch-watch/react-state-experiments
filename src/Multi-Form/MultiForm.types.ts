@@ -1,18 +1,21 @@
 import type {
   ENROLLER_STATES,
   Events,
-  FORM_STATES,
+  FORM_SUB_STATES,
 } from "./MultiForm.constants"
 
-export type MachineMode =
-  | keyof typeof ENROLLER_STATES
-  | keyof typeof FORM_STATES
+type FormSubState = keyof typeof FORM_SUB_STATES
+
+export type MachineState =
+  | {
+      mode: typeof ENROLLER_STATES.dashboard
+    }
+  | {
+      mode: typeof ENROLLER_STATES.form
+      substate: FormSubState
+    }
 
 export type MachineEvent = keyof typeof Events
-
-export type State = {
-  mode: MachineMode
-}
 
 export type MachineAction = {
   type: MachineEvent

@@ -1,27 +1,21 @@
-export const FORM_STATES = {
+import type { MachineState } from "./MultiForm.types"
+
+export const FORM_SUB_STATES = {
   details: "details",
   paymentInfo: "paymentInfo",
   review: "review",
   final: "final",
 } as const
 
-Object.freeze(FORM_STATES)
+Object.freeze(FORM_SUB_STATES)
 
 export const ENROLLER_STATES = {
   dashboard: "dashboard",
+  form: "form",
 } as const
 
-Object.freeze(ENROLLER_STATES)
-
-export const MACHINE_STATES = {
-  ...ENROLLER_STATES,
-  form: FORM_STATES,
-} as const
-
-Object.freeze(MACHINE_STATES)
-
-export const INITIAL_MACHINE_STATE = {
-  mode: MACHINE_STATES.dashboard,
+export const INITIAL_MACHINE_STATE: MachineState = {
+  mode: "dashboard",
 } as const
 
 Object.freeze(INITIAL_MACHINE_STATE)
