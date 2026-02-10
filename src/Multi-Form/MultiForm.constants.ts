@@ -28,4 +28,15 @@ export const Events = {
   SUBMIT: "SUBMIT",
 } as const
 
+export const DASHBOARD_EVENTS = {
+  OPEN_FORM: "OPEN_FORM",
+} as const
+
+export const FORM_EVENTS = {
+  SAVE_AND_EXIT: "SAVE_AND_EXIT",
+  DETAILS_CHECKED: "DETAILS_CHECKED",
+  PAYMENT_INFO_PROVIDED: "PAYMENT_INFO_PROVIDED",
+  SUBMIT: "SUBMIT",
+} as const
+
 Object.freeze(Events)

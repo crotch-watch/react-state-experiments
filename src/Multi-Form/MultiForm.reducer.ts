@@ -1,5 +1,5 @@
 import { Events, ENROLLER_STATES, FORM_SUB_STATES } from "./MultiForm.constants"
-import type { MachineAction, MachineState } from "./MultiForm.types"
+import type { EnrollerEvents, MachineState } from "./MultiForm.types"
 
 const {
   OPEN_FORM,
@@ -15,35 +15,35 @@ const { details, paymentInfo, review, final } = FORM_SUB_STATES
 
 export const multiReducer = (
   state: MachineState,
-  actions: MachineAction,
+  actions: EnrollerEvents,
 ): MachineState => {
-  const event = actions.type
+  const { event } = actions
   const { mode } = state
 
   switch (event) {
     case SAVE_AND_EXIT: {
       if (mode !== form) return state
-      else return { mode: dashboard }
+      return { mode: dashboard }
     }
 
     case OPEN_FORM: {
-      if (mode === form) return state
-      else return { mode: form, substate: details }
+      if (mode !== dashboard) return state
+      return { mode: form, substate: details }
     }
 
     case DETAILS_CHECKED: {
       if (mode !== form) return state
-      else return { ...state, substate: paymentInfo }
+      return { mode: form, substate: paymentInfo }
     }
 
     case PAYMENT_INFO_PROVIDED: {
       if (mode !== form) return state
-      else return { ...state, substate: review }
+      return { mode: form, substate: review }
     }
 
     case SUBMIT: {
       if (mode !== form) return state
-      else return { ...state, substate: final }
+      return { mode: form, substate: final }
     }
 
     default:
