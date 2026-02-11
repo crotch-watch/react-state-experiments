@@ -17,36 +17,26 @@ export const multiReducer = (
   state: MachineState,
   actions: EnrollerEvents,
 ): MachineState => {
-  const { event } = actions
+  const { event, mode: incomingMode } = actions
   const { mode } = state
 
-  switch (event) {
-    case SAVE_AND_EXIT: {
-      if (mode !== form) return state
-      return { mode: dashboard }
-    }
-
-    case OPEN_FORM: {
-      if (mode !== dashboard) return state
-      return { mode: form, substate: details }
-    }
-
-    case DETAILS_CHECKED: {
-      if (mode !== form) return state
-      return { mode: form, substate: paymentInfo }
-    }
-
-    case PAYMENT_INFO_PROVIDED: {
-      if (mode !== form) return state
-      return { mode: form, substate: review }
-    }
-
-    case SUBMIT: {
-      if (mode !== form) return state
-      return { mode: form, substate: final }
-    }
-
-    default:
+  switch (incomingMode) {
+    case dashboard: {
+      if (mode === form) return state
+      if (event === OPEN_FORM) return { mode: form, substate: details }
       return state
+    }
+
+    case form: {
+      if (mode === dashboard) return state
+
+      if (event === SAVE_AND_EXIT) return { mode: dashboard }
+
+      if (event === DETAILS_CHECKED) return { ...state, substate: paymentInfo }
+      if (event === PAYMENT_INFO_PROVIDED) return { ...state, substate: review }
+      if (event === SUBMIT) return { ...state, substate: final }
+
+      return state
+    }
   }
 }
