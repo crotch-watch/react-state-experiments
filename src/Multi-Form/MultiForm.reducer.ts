@@ -20,21 +20,33 @@ export const multiReducer = (
   const { event, mode: incomingMode } = actions
   const { mode } = state
 
+  if (incomingMode !== mode) {
+    console.warn(`
+      Illegal Transition Attempted:
+      - Event: ${event} is only valid in Mode: "${incomingMode}"
+      - Current Internal State mode is: "${mode}"
+      Action Ignored.
+  `)
+
+    return state
+  }
+
   switch (incomingMode) {
     case dashboard: {
-      if (mode === form) return state
       if (event === OPEN_FORM) return { mode: form, substate: details }
       return state
     }
 
     case form: {
-      if (mode === dashboard) return state
-
       if (event === SAVE_AND_EXIT) return { mode: dashboard }
 
-      if (event === DETAILS_CHECKED) return { ...state, substate: paymentInfo }
-      if (event === PAYMENT_INFO_PROVIDED) return { ...state, substate: review }
-      if (event === SUBMIT) return { ...state, substate: final }
+      if (event === DETAILS_CHECKED)
+        return { mode: form, substate: paymentInfo }
+
+      if (event === PAYMENT_INFO_PROVIDED)
+        return { mode: form, substate: review }
+
+      if (event === SUBMIT) return { mode: form, substate: final }
 
       return state
     }
