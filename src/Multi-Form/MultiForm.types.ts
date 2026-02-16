@@ -2,6 +2,7 @@ import {
   DASHBOARD_EVENTS,
   ENROLLER_STATES,
   FORM_EVENTS,
+  FORM_SUB_STATE_EVENTS,
   type FORM_SUB_STATES,
 } from "./MultiForm.constants"
 
@@ -22,43 +23,30 @@ export type MachineState =
 const { OPEN_FORM } = DASHBOARD_EVENTS
 type OPEN_FORM = typeof OPEN_FORM
 
-type DashBoardEvents = {
+type DashBoardTransition = {
   mode: Dashboard
   event: OPEN_FORM
 }
 
-const { SAVE_AND_EXIT } = FORM_EVENTS
-type SAVE_AND_EXIT = typeof SAVE_AND_EXIT
-
-type FormEvent = {
-  mode: Form
-  event: SAVE_AND_EXIT
-}
-
-type Details = typeof FORM_SUB_STATES.details
-type PaymentInfo = typeof FORM_SUB_STATES.paymentInfo
-type Review = typeof FORM_SUB_STATES.review
-
-const { DETAILS_CHECKED, PAYMENT_INFO_PROVIDED, SUBMIT } = FORM_EVENTS
-type DETAILS_CHECKED = typeof DETAILS_CHECKED
-type PAYMENT_INFO_PROVIDED = typeof PAYMENT_INFO_PROVIDED
-type SUBMIT = typeof SUBMIT
-
-type FormSubStateEvents =
+export type EnorollerTable =
+  | DashBoardTransition
   | {
       mode: Form
-      substate: Details
-      event: DETAILS_CHECKED
+      substate: FormSubState
+      event: typeof FORM_EVENTS.SAVE_AND_EXIT
     }
   | {
       mode: Form
-      substate: PaymentInfo
-      event: PAYMENT_INFO_PROVIDED
+      substate: typeof FORM_SUB_STATES.details
+      event: typeof FORM_SUB_STATE_EVENTS.DETAILS_CHECKED
     }
   | {
       mode: Form
-      substate: Review
-      event: SUBMIT
+      substate: typeof FORM_SUB_STATES.paymentInfo
+      event: typeof FORM_SUB_STATE_EVENTS.PAYMENT_INFO_PROVIDED
     }
-
-export type EnrollerEvents = DashBoardEvents | FormEvent | FormSubStateEvents
+  | {
+      mode: Form
+      substate: typeof FORM_SUB_STATES.review
+      event: typeof FORM_SUB_STATE_EVENTS.SUBMIT
+    }
