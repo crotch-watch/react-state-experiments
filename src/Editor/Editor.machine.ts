@@ -1,33 +1,31 @@
-import { setup } from "xstate"
+import { createMachine } from "xstate"
 
-export const editorMachine = setup({
-  types: {
-    events: {} as
-      | { type: "editor.open" }
-      | { type: "editor.close" }
-      | { type: "opened.focus" }
-      | { type: "opened.blur" }
-      | { type: "opened.save" }
-      | { type: "opened.saved" },
-  },
-}).createMachine({
-  id: "editor",
-  initial: "closed",
+/**
+ * @see https://stately.ai/registry/editor/de98b1b8-a949-4452-b956-042071465cff?mode=Design&machineId=e96c7758-2689-4404-9ae4-11f42ac8d0a3
+ */
+export const editorMachine = createMachine({
+  id: "session",
+  initial: "editor",
   states: {
-    closed: { on: { "editor.open": { target: "opened" } } },
-    opened: {
-      on: { "editor.close": { target: "closed" } },
+    editor: {
+      entry: { type: "LOCK_FILE" },
+      exit: { type: "UNLOCK_FILE" },
+
+      on: { CLOSE: "closed" },
+
       initial: "viewing",
       states: {
-        viewing: { on: { "opened.focus": { target: "editing" } } },
-        editing: {
+        viewing: { on: { "editor.TYPE": "modifying" } },
+        modifying: {
           on: {
-            "opened.save": { target: "saving" },
-            "opened.blur": { target: "viewing" },
+            "editor.BLUR": "viewing",
+            "editor.SAVE": "saving",
           },
         },
-        saving: { on: { "opened.saved": { target: "editing" } } },
+        saving: { on: { "editor.SAVED": "modifying" } },
       },
     },
+
+    closed: { type: "final" },
   },
 })
