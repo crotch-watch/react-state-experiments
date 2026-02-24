@@ -1,23 +1,14 @@
-import {
-  ENROLLER_STATES,
-  ENROLLER_MACHINE,
-  FORM_EVENTS,
-} from "./MultiForm.constants"
-import type { EnorollerTable, MachineState } from "./MultiForm.types"
-
-const { dashboard, form } = ENROLLER_STATES
-const { SAVE_AND_EXIT } = FORM_EVENTS
+import { ENROLLER_MACHINE } from "./MultiForm.constants"
+import type { EnrollerTable, MachineState } from "./MultiForm.types"
 
 export const multiReducer = (
   state: MachineState,
-  actions: EnorollerTable,
+  actions: EnrollerTable,
 ): MachineState => {
-  const { event } = actions
-
   if (actions.mode !== state.mode) {
     console.warn(`
       Illegal Transition Attempted:
-      - Event: ${event} is only valid in Mode: "${actions.mode}"
+      - Event: ${actions.event} is only valid in Mode: "${actions.mode}"
       - Current Internal State mode is: "${state.mode}"
       Action Ignored.
   `)
@@ -26,15 +17,15 @@ export const multiReducer = (
   }
 
   if (
-    actions.mode === form &&
-    state.mode === form &&
+    actions.mode === "form" &&
+    state.mode === "form" &&
     actions.event !== "SAVE_AND_EXIT"
   ) {
-    if (actions.substate !== state.substate) {
+    if (state.substate !== actions.substate) {
       console.warn(`
       Illegal Transition Attempted:
-      - Event: ${actions.event} is only valid in : "${actions.substate}"
-      - Current Internal mode is: "${state.substate}"
+      - Event: ${actions.event} is only valid in Mode: "${actions.substate}"
+      - Current Internal State mode is: "${state.substate}"
       Action Ignored.
   `)
 
@@ -43,19 +34,22 @@ export const multiReducer = (
   }
 
   switch (actions.mode) {
-    case dashboard: {
+    case "dashboard": {
       return ENROLLER_MACHINE.states[actions.mode][actions.event]
     }
 
-    case form: {
-      const mode = ENROLLER_MACHINE.states[actions.mode]
+    case "form": {
+      const formTable = ENROLLER_MACHINE.states[actions.mode]
 
-      if (actions.event === SAVE_AND_EXIT) return mode[actions.event]
+      if (actions.event === "SAVE_AND_EXIT") return formTable[actions.event]
 
-      const event = mode.states[actions.substate]
+      if (actions.substate !== "final")
+        return formTable.states[actions.substate].target
 
-      // TODO: relation between enroller machine shape and indexing types
-      return event[actions.event as keyof typeof event]
+      return state
     }
+
+    default:
+      return state
   }
 }
