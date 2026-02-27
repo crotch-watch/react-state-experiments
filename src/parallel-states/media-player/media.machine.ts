@@ -4,25 +4,38 @@ export const mediaPlayerMachine = createMachine({
   id: "media-player",
   type: "parallel",
   states: {
-    playback: {
+    player: {
       initial: "idle",
       states: {
-        idle: { on: { "playback.START": "active" } },
-        active: {
+        idle: { on: { "player.START": "playback" } },
+
+        playback: {
+          on: { NETWORK_DISCONNECTED: "idle" },
+
           initial: "playing",
           states: {
-            playing: { on: { "active.PAUSE": "paused" } },
-            paused: { on: { "active.PLAY": "playing" } },
+            playing: { on: { "playback.PAUSE": "paused" } },
+            paused: { on: { "playback.PLAY": "playing" } },
           },
-          on: { "playback.STOP": "idle" },
         },
       },
     },
-    buffer: {
-      initial: "buffering",
+    stream: {
+      initial: "data",
       states: {
-        buffering: { on: { COMPLETED: "buffered" } },
-        buffered: { on: { CONSUMED: "buffering" } },
+        data: {
+          entry: [{ type: "setup-stream" }],
+          exit: [{ type: "destroy-stream" }],
+
+          initial: "buffering",
+          states: {
+            buffering: { on: { "data.STREAMED": "buffered" } },
+            buffered: { on: { "data.REQUIRED": "buffering" } },
+          },
+
+          on: { NETWORK_DISCONNECTED: "errored" },
+        },
+        errored: { on: { "player.START": "data" } },
       },
     },
     view: {
@@ -30,17 +43,27 @@ export const mediaPlayerMachine = createMachine({
       states: {
         fullscreen: {
           on: { "view.MINIMIZE": "minimized" },
+
           type: "parallel",
           states: {
             slider: {
               on: {
-                "slider.MOVE": {
-                  target: "slider",
-                  actions: () => console.log("SELF_TRANSITION"),
+                "slider.STEP_CHANGE": {
+                  actions: { type: "change-volume" },
+                  guard: { type: "volumeHasChanged" },
+                  description: "DEBOUNCED",
                 },
               },
             },
-            seeker: {},
+            seeker: {
+              on: {
+                "seeker.STEP_CHANGE": {
+                  actions: { type: "change-playback_position" },
+                  guard: { type: "playbackPositionHasChanged",},
+                  description: "DEBOUNCED",
+                },
+              },
+            },
           },
         },
         minimized: { on: { "view.MAXIMIZE": "fullscreen" } },
