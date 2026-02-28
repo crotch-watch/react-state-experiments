@@ -10,7 +10,7 @@ export const mediaPlayerMachine = createMachine({
     player: {
       initial: "idle",
       states: {
-        idle: { on: { "player.START": "playback" } },
+        idle: { on: { "player.START": "playback", RETRY: "playback" } },
 
         playback: {
           on: { NETWORK_DISCONNECTED: "idle" },
@@ -38,7 +38,14 @@ export const mediaPlayerMachine = createMachine({
 
           on: { NETWORK_DISCONNECTED: "errored" },
         },
-        errored: { on: { "player.START": "data" } },
+        errored: {
+          on: {
+            RETRY: {
+              guard: "underMaxRetries AND socketAlive",
+              target: "data",
+            },
+          },
+        },
       },
     },
     view: {
@@ -62,7 +69,7 @@ export const mediaPlayerMachine = createMachine({
               on: {
                 "seeker.STEP_CHANGE": {
                   actions: { type: "change-playback_position" },
-                  guard: { type: "playbackPositionHasChanged",},
+                  guard: { type: "playbackPositionHasChanged" },
                   description: "DEBOUNCED",
                 },
               },
