@@ -1,5 +1,8 @@
 import { createMachine } from "xstate"
 
+/**
+ * @see https://stately.ai/registry/editor/de98b1b8-a949-4452-b956-042071465cff?machineId=439d149c-e8c5-4432-9bd9-e8d6151b4dd0
+ */
 export const mediaPlayerMachine = createMachine({
   id: "media-player",
   type: "parallel",
