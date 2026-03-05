@@ -6,30 +6,36 @@ export const downloaderMachine = createMachine({
   type: "parallel",
   states: {
     pooler: {
-      initial: "pooling",
+      initial: "active",
 
       states: {
-        pooling: {
-          on: {
-            PAUSE: "paused",
-            NETWORK_DISCONNECTED: "paused",
-            SATURATED: "stalled"
-          }
-        },
-        stalled: {
-          on: {
-            DRAINED: "pooling",
-            "pooler.PAUSE": "paused"
-          }
-        },
-        paused: {
-          on: {
-            "pooler.POOL": {
-              target: "pooling",
-              guard: "underPoolLimit OR memAvailable"
+        active: {
+          initial: "pooling",
+          states: {
+            pooling: {
+              on: {
+                USER_PAUSED: "paused",
+                SATURATED: "stalled"
+              }
+            },
+            stalled: {
+              on: {
+                BUFFER_DRAINED: "pooling",
+                USER_PAUSED: "paused"
+              }
+            },
+            paused: {
+              on: {
+                RESUME_POOLING: {
+                  target: "pooling",
+                  guard: "underPoolLimit OR memAvailable"
+                }
+              }
             }
-          }
-        }
+          },
+          on: { DOWNLOAD_STOPPED: "closed" }
+        },
+        closed: { type: "final" }
       }
     },
 
@@ -37,43 +43,45 @@ export const downloaderMachine = createMachine({
       initial: "checking",
       states: {
         checking: {
-          on: {
-            "network.STREAM": { actions: { type: "VALIDATE_CHECKSUM" } }
-          }
+          on: { "network.STREAM": { actions: { type: "VALIDATE_CHECKSUM" } } }
         }
       }
     },
 
     network: {
-      initial: "active",
+      initial: "opened",
       states: {
-        active: {
-          initial: "streaming",
+        opened: {
+          initial: "active",
           states: {
-            paused: {
-              after: {
-                12000: { target: "errored", actions: "SOCKET_TIMEOUT" }
+            active: {
+              initial: "flowing",
+              states: {
+                suspended: {
+                  after: {
+                    12000: { target: "errored", actions: "SOCKET_TIMEOUT" }
+                  },
+                  on: { RESUME_FLOW: "flowing" }
+                },
+                flowing: { on: { SUSPEND_FLOW: "suspended" } }
               },
+
               on: {
-                "network.STREAM": { target: "streaming" },
-                DRAINED: "streaming"
+                NETWORK_DISCONNECTED: "errored"
               }
             },
-            streaming: {
-              on: { "network.PAUSE": { target: "paused" }, SATURATED: "paused" }
+            errored: {
+              on: {
+                RETRY: {
+                  guard: "underMaxRetries AND socketAlive",
+                  target: "active"
+                }
+              }
             }
           },
-
-          on: { NETWORK_DISCONNECTED: "errored" }
+          on: { DOWNLOAD_STOPPED: "closed" }
         },
-        errored: {
-          on: {
-            RETRY: {
-              guard: "underMaxRetries AND socketAlive",
-              target: "active"
-            }
-          }
-        }
+        closed: { type: "final" }
       }
     },
 
@@ -83,19 +91,12 @@ export const downloaderMachine = createMachine({
         active: {
           initial: "downloading",
           states: {
-            paused: { on: { "playback.RESUME": "downloading" } },
-            downloading: { on: { "playback.PAUSE": "paused" } }
+            paused: { on: { RESUME: "downloading" } },
+            downloading: { on: { PAUSE: "paused" } }
           },
-          on: { NETWORK_DISCONNECTED: "errored" }
+          on: { DOWNLOAD_STOPPED: "stopped" }
         },
-        errored: {
-          on: {
-            RETRY: {
-              target: "active",
-              guard: "underMaxRetries AND socketAlive"
-            }
-          }
-        }
+        stopped: { type: "final" }
       }
     }
   }
