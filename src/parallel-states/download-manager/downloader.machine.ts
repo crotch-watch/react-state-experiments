@@ -6,18 +6,25 @@ export const downloaderMachine = createMachine({
   type: "parallel",
   states: {
     pooler: {
-      initial: "paused",
+      initial: "pooling",
 
       states: {
         pooling: {
           on: {
             PAUSE: "paused",
-            NETWORK_DISCONNECTED: "paused"
+            NETWORK_DISCONNECTED: "paused",
+            SATURATED: "stalled"
+          }
+        },
+        stalled: {
+          on: {
+            DRAINED: "pooling",
+            "pooler.PAUSE": "paused"
           }
         },
         paused: {
           on: {
-            "network.STREAM": {
+            "pooler.POOL": {
               target: "pooling",
               guard: "underPoolLimit OR memAvailable"
             }
@@ -27,9 +34,9 @@ export const downloaderMachine = createMachine({
     },
 
     "integrity-checker": {
-      initial: "checker",
+      initial: "checking",
       states: {
-        checker: {
+        checking: {
           on: {
             "network.STREAM": { actions: { type: "VALIDATE_CHECKSUM" } }
           }
@@ -41,17 +48,20 @@ export const downloaderMachine = createMachine({
       initial: "active",
       states: {
         active: {
-          initial: "waiting",
+          initial: "streaming",
           states: {
-            waiting: {
+            paused: {
               after: {
                 12000: { target: "errored", actions: "SOCKET_TIMEOUT" }
               },
               on: {
-                "network.STREAM": { target: "streaming" }
+                "network.STREAM": { target: "streaming" },
+                DRAINED: "streaming"
               }
             },
-            streaming: { on: { "network.PAUSE": { target: "waiting" } } }
+            streaming: {
+              on: { "network.PAUSE": { target: "paused" }, SATURATED: "paused" }
+            }
           },
 
           on: { NETWORK_DISCONNECTED: "errored" }
@@ -71,10 +81,10 @@ export const downloaderMachine = createMachine({
       initial: "active",
       states: {
         active: {
-          initial: "paused",
+          initial: "downloading",
           states: {
-            paused: { on: { "playback.RESUME": "resumed" } },
-            resumed: { on: { "playback.PAUSE": "paused" } }
+            paused: { on: { "playback.RESUME": "downloading" } },
+            downloading: { on: { "playback.PAUSE": "paused" } }
           },
           on: { NETWORK_DISCONNECTED: "errored" }
         },
