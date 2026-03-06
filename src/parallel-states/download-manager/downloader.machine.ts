@@ -14,17 +14,17 @@ export const downloaderMachine = createMachine({
           states: {
             pooling: {
               on: {
-                USER_PAUSED: "paused",
-                SATURATED: "stalled"
+                SUSPEND_POOLING: "suspended",
+                POOL_SATURATED: "stalled"
               }
             },
             stalled: {
               on: {
                 BUFFER_DRAINED: "pooling",
-                USER_PAUSED: "paused"
+                SUSPEND_POOLING: "suspended"
               }
             },
-            paused: {
+            suspended: {
               on: {
                 RESUME_POOLING: {
                   target: "pooling",
@@ -39,12 +39,18 @@ export const downloaderMachine = createMachine({
       }
     },
 
-    "integrity-checker": {
-      initial: "checking",
+    integrityChecker: {
+      initial: "running",
       states: {
-        checking: {
-          on: { "network.STREAM": { actions: { type: "VALIDATE_CHECKSUM" } } }
-        }
+        running: {
+          on: {
+            DATA_RECEIVED: {
+              actions: "VALIDATE_CHECKSUM"
+            },
+            DOWNLOAD_STOPPED: "stopped"
+          }
+        },
+        stopped: { type: "final" }
       }
     },
 
@@ -91,8 +97,8 @@ export const downloaderMachine = createMachine({
         active: {
           initial: "downloading",
           states: {
-            paused: { on: { RESUME: "downloading" } },
-            downloading: { on: { PAUSE: "paused" } }
+            paused: { on: { RESUME_PLAYBACK: "downloading" } },
+            downloading: { on: { PAUSE_PLAYBACK: "paused" } }
           },
           on: { DOWNLOAD_STOPPED: "stopped" }
         },
