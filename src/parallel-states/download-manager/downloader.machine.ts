@@ -26,6 +26,10 @@ export const downloaderMachine = createMachine({
                         SUSPEND_WRITING: {
                           target: "suspended",
                           guard: "lowDiskSpace OR bufferEmpty"
+                        },
+                        COMPLETED_WRITING: {
+                          target: "#download-manager.session.writer.stopped",
+                          guard: "everyChunkValidated AND emptyBuffer"
                         }
                       }
                     },
@@ -59,7 +63,11 @@ export const downloaderMachine = createMachine({
                 pooling: {
                   on: {
                     SUSPEND_POOLING: "suspended",
-                    POOL_SATURATED: "stalled"
+                    POOL_SATURATED: "stalled",
+                    COMPLETED_POOLING: {
+                      guard: "poolEmpty",
+                      target: "#download-manager.session.pooler.closed"
+                    }
                   }
                 },
                 stalled: {
@@ -91,7 +99,8 @@ export const downloaderMachine = createMachine({
                 DATA_RECEIVED: {
                   actions: "VALIDATE_CHECKSUM"
                 },
-                DOWNLOAD_STOPPED: "stopped"
+                DOWNLOAD_STOPPED: "stopped",
+                COMPLETED_CHECKING: "stopped"
               }
             },
             stopped: { type: "final" }
@@ -117,7 +126,11 @@ export const downloaderMachine = createMachine({
                   },
 
                   on: {
-                    NETWORK_DISCONNECTED: "errored"
+                    NETWORK_DISCONNECTED: "errored",
+                    COMPLETED_TRANSFER: {
+                      guard: "everyPacketTransferred",
+                      target: "#download-manager.session.network.closed"
+                    }
                   }
                 },
                 errored: {
@@ -144,12 +157,15 @@ export const downloaderMachine = createMachine({
                 paused: { on: { RESUME_PLAYBACK: "downloading" } },
                 downloading: { on: { PAUSE_PLAYBACK: "paused" } }
               },
-              on: { DOWNLOAD_STOPPED: "stopped" }
+              on: {
+                DOWNLOAD_STOPPED: "stopped",
+                COMPLETED_PLAYBACK: "#download-manager.session.playback.stopped"
+              }
             },
             stopped: { type: "final" }
           }
         }
       }
-    },
+    }
   }
 })
