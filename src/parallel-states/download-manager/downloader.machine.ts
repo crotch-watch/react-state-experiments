@@ -1,5 +1,8 @@
 import { createMachine } from "xstate"
 
+/**
+ * @see https://stately.ai/registry/editor/de98b1b8-a949-4452-b956-042071465cff?machineId=2b4c0c01-b4d3-40eb-9bff-7d3bfd785bf0
+ */
 export const downloaderMachine = createMachine({
   id: "download-manager",
   initial: "idle",
